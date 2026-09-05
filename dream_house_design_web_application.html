@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dream House Design | Ultra-Luxury Architecture & Construction</title>
+    
+    <!-- Favicon link to prevent 404 error -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏰</text></svg>">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -189,12 +193,12 @@
 
         <!-- Background Video with Light Overlay -->
         <div class="absolute inset-0 z-0 overflow-hidden">
-            <!-- Desktop Video -->
-            <video autoplay muted loop playsinline class="hidden md:block w-full h-full object-cover opacity-40 scale-105 transition-transform duration-[10000ms] ease-out hover:scale-100">
+            <!-- Desktop Video with ID added -->
+            <video id="heroDesktopVideo" autoplay muted loop playsinline class="hidden md:block w-full h-full object-cover opacity-40 scale-105 transition-transform duration-[10000ms] ease-out hover:scale-100">
                 <source src="desktop.mp4" type="video/mp4">
             </video>
-            <!-- Mobile Video -->
-            <video autoplay muted loop playsinline class="block md:hidden w-full h-full object-cover opacity-40 scale-105">
+            <!-- Mobile Video with ID added -->
+            <video id="heroMobileVideo" autoplay muted loop playsinline class="block md:hidden w-full h-full object-cover opacity-40 scale-105">
                 <source src="mobile.mp4" type="video/mp4">
             </video>
 
@@ -827,35 +831,67 @@
     <!-- AOS & Custom Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        AOS.init({ once: true, duration: 900, offset: 80 });
-
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('preloader').classList.add('preloader-hidden');
-            }, 600);
-        });
-
-        window.addEventListener('scroll', () => {
-            const header = document.getElementById('header');
-            if (window.scrollY > 40) {
-                header.classList.add('py-3', 'shadow-xl');
-                header.classList.remove('py-4');
-            } else {
-                header.classList.remove('py-3', 'shadow-xl');
-                header.classList.add('py-4');
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize AOS library safely
+            if (typeof AOS !== 'undefined') {
+                AOS.init({ once: true, duration: 900, offset: 80 });
             }
+
+            // Safe interaction listener binding for video elements
+            const videoElements = document.querySelectorAll('video');
+            videoElements.forEach((video) => {
+                if (video) {
+                    video.addEventListener('loadeddata', () => {
+                        video.play().catch(() => {
+                            // Suppress browser autoplay restrictions silently
+                        });
+                    });
+                }
+            });
+
+            // Preloader hiding sequence
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    const preloader = document.getElementById('preloader');
+                    if (preloader) {
+                        preloader.classList.add('preloader-hidden');
+                    }
+                }, 600);
+            });
+
+            // Header shrink on scroll
+            window.addEventListener('scroll', () => {
+                const header = document.getElementById('header');
+                if (header) {
+                    if (window.scrollY > 40) {
+                        header.classList.add('py-3', 'shadow-xl');
+                        header.classList.remove('py-4');
+                    } else {
+                        header.classList.remove('py-3', 'shadow-xl');
+                        header.classList.add('py-4');
+                    }
+                }
+            });
+
+            // Mobile menu handlers
+            const menuBtn = document.getElementById('menuBtn');
+            const menuClose = document.getElementById('menuClose');
+            const mobileMenu = document.getElementById('mobileMenu');
+
+            if (menuBtn && mobileMenu) {
+                menuBtn.addEventListener('click', () => mobileMenu.classList.remove('translate-x-full'));
+            }
+            if (menuClose && mobileMenu) {
+                menuClose.addEventListener('click', () => mobileMenu.classList.add('translate-x-full'));
+            }
+            document.querySelectorAll('.mobile-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (mobileMenu) mobileMenu.classList.add('translate-x-full');
+                });
+            });
         });
 
-        const menuBtn = document.getElementById('menuBtn');
-        const menuClose = document.getElementById('menuClose');
-        const mobileMenu = document.getElementById('mobileMenu');
-
-        menuBtn.addEventListener('click', () => mobileMenu.classList.remove('translate-x-full'));
-        menuClose.addEventListener('click', () => mobileMenu.classList.add('translate-x-full'));
-        document.querySelectorAll('.mobile-link').forEach(link => {
-            link.addEventListener('click', () => mobileMenu.classList.add('translate-x-full'));
-        });
-
+        // Project filtering function
         function filterProjects(category) {
             const items = document.querySelectorAll('.project-item');
             const btnAll = document.getElementById('btn-all');
@@ -863,19 +899,21 @@
             const btnCom = document.getElementById('btn-commercial');
 
             [btnAll, btnRes, btnCom].forEach(btn => {
-                btn.className = "px-6 py-2.5 border border-slatebg-300 text-navy-900 hover:border-gold-500 font-semibold text-xs uppercase tracking-widest rounded-sm transition-all";
+                if (btn) {
+                    btn.className = "px-6 py-2.5 border border-slatebg-300 text-navy-900 hover:border-gold-500 font-semibold text-xs uppercase tracking-widest rounded-sm transition-all";
+                }
             });
 
-            if(category === 'all') {
+            if (category === 'all' && btnAll) {
                 btnAll.className = "px-6 py-2.5 gold-bg text-navy-950 font-bold text-xs uppercase tracking-widest rounded-sm transition-all shadow-md";
-            } else if(category === 'residential') {
+            } else if (category === 'residential' && btnRes) {
                 btnRes.className = "px-6 py-2.5 gold-bg text-navy-950 font-bold text-xs uppercase tracking-widest rounded-sm transition-all shadow-md";
-            } else if(category === 'commercial') {
+            } else if (category === 'commercial' && btnCom) {
                 btnCom.className = "px-6 py-2.5 gold-bg text-navy-950 font-bold text-xs uppercase tracking-widest rounded-sm transition-all shadow-md";
             }
 
             items.forEach(item => {
-                if(category === 'all' || item.classList.contains(category)) {
+                if (category === 'all' || item.classList.contains(category)) {
                     item.style.display = 'block';
                 } else {
                     item.style.display = 'none';
@@ -883,16 +921,22 @@
             });
         }
 
+        // Form submission modal trigger
         function handleForm(e) {
             e.preventDefault();
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('consultForm').reset();
+            const modal = document.getElementById('modal');
+            const consultForm = document.getElementById('consultForm');
+            if (modal) modal.classList.remove('hidden');
+            if (consultForm) consultForm.reset();
         }
 
+        // Modal toggle trigger
         function toggleModal(show) {
             const modal = document.getElementById('modal');
-            if(show) modal.classList.remove('hidden');
-            else modal.classList.add('hidden');
+            if (modal) {
+                if (show) modal.classList.remove('hidden');
+                else modal.classList.add('hidden');
+            }
         }
     </script>
 </body>
